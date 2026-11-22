@@ -15,6 +15,16 @@ only shareable hardware facts, hashes and dates.
   - `compatible = "qcom,volcano-qrd", "qcom,volcano", "qcom,volcanop-qrd", "qcom,volcanop", "qcom,qrd"`
   - `qcom,msm-id = <640 0x10000>, <641 0x10000>, <636 0x10000>` (VOLCANO6, VOLCANO6P, VOLCANO)
   - `qcom,board-id = <11 0>`; no `qcom,oem-id` at the FDT root.
+- In the archived stock DTBO image, entry 64 is labeled `Volcano QRD` and has
+  `qcom,oem-id = <1>` (sha256
+  `57afcf982caa1b5907f0154eaa3dc75abff8a045a25789c59ab5fb777506ca3a`);
+  entry 65 is labeled `Volcano QRD Pro` and has `qcom,oem-id = <2>` (sha256
+  `93be04b6e20914fd1546ad314e351199bb3e6b6a71c2555ef956175164909ae2`).
+  Both have the same `qcom,board-id` and `qcom,msm-id` values shown above.
+  The Pro model matches the archived live FDT, but selection by the bootloader
+  has not been observed. Both overlays contain the same Focaltech touch-node
+  properties before fixups; their remaining hardware cannot be assumed to be
+  identical.
 - Upstream Linux 7.3 ships `milos-nothing-asteroids.dts` with
   `model = "Nothing Phone (3a)"` and no oem-id. The historical, self-declared
   untested tree `sm7635-mainline/linux` (commit
@@ -30,9 +40,14 @@ only shareable hardware facts, hashes and dates.
   `spi@a80000` (`qcom,spi-geni`, SPI0), `compatible = "focaltech,fts_ts"`,
   `reg = <0>`, `spi-max-frequency = <0xb71b00>` (12 MHz),
   `focaltech,max-touch-number = <0x0a>`,
-  `focaltech,display-coords = <0 0 1080 2392>`, interrupt and reset on PMIC
-  GPIO cells 0x13 / 0x14 of the PMIC gpio controller phandle in the stock DT
-  (controller identity not resolved in this file). Measured working on vendor
+  `focaltech,display-coords = <0 0 1080 2392>`. Resolving stock phandle
+  `0x65` identifies the SoC TLMM at `/soc/pinctrl@f000000`, not a PMIC GPIO
+  controller: interrupt uses TLMM GPIO 19 and reset uses GPIO 20. `vci-supply`
+  resolves to PM7550 L22, specified as 3.3 V in the stock live FDT;
+  `vddio-supply` resolves to PM7550 L11 at 1.8 V. These are DT properties,
+  not measured voltages. The upstream Nothing tree sets PM7550 L22
+  (`vreg_l22b`) to 3.2 V, a discrepancy to resolve before enabling touch or
+  changing the rail. Measured working on vendor
   kernel 6.1 with the vendor module `focaltech_fts.ko` (device record boot
   `8dc2622e`, 2026-11-07). Required module order on the vendor kernel:
   `msm_gpi` -> `touchpanel_event_notify` -> `spi-msm-geni` -> `focaltech_fts`;
@@ -49,7 +64,8 @@ only shareable hardware facts, hashes and dates.
   kernel TFE/RDI path (1680x1260 RAW10); see the private device record and
   `phone-second-life` `patches/mb003-camera`. Mainline has
   `drivers/media/i2c/imx355.c`, but the upstream asteroids tree enables no
-  camera path.
+  camera path. A capture returning a buffer alone is not proof of a usable
+  image or a mainline camera pipeline.
 - WLAN, audio codecs, NFC, haptics: measured or present on the vendor kernel
   per the device record; none of them is enabled by the upstream asteroids
   device tree.
@@ -71,12 +87,18 @@ only shareable hardware facts, hashes and dates.
 - Firmware files referenced by the remoteproc nodes are not part of this
   repository and must not be added.
 
+## Reachability
+
+- 2026-11-22: a read-only live check failed; the device was not reachable.
+  No device writes or reboots were performed. The dated vendor-kernel
+  measurements above remain the only on-device evidence.
+
 ## Consequences for Omnipha work
 
 - Board-specific additions (touch child node, panel, camera, WLAN) go into a
   device tree on branch `omnipha`, never into `milos.dtsi`.
 - Each addition needs its own measured evidence per `AGENTS.md`; the vendor
   kernel measurements above are evidence for vendor behavior only.
-- Open measurement points: Pro vs non-Pro oem-id handling, fitted panel
-  variant, PMIC gpio controller for touch interrupt/reset, SPI touch protocol
-  against a mainline driver.
+- Open measurement points: actual bootloader DTBO selection, the upstream
+  board tree's applicability to Pro, the fitted panel variant, the L22
+  voltage discrepancy and the SPI touch protocol against a mainline driver.

@@ -19,8 +19,8 @@ It is not an installer, a boot image, or a claim that any phone is supported.
 
 | Source | Upstream model | Omnipha verification |
 |---|---|---|
-| `milos-nothing-asteroids.dts` | Nothing Phone (3a) | Source present; no mainline build or boot tested here. Whether it works for our Phone (3a) Pro is unknown. |
-| `milos-fairphone-fp6.dts` | The Fairphone (Gen. 6) | Source present; no build or device test claimed here. |
+| `milos-nothing-asteroids.dts` | Nothing Phone (3a) | Built and DT-schema checked; no mainline boot tested here. Applicability to our Phone (3a) Pro is unknown. |
+| `milos-fairphone-fp6.dts` | The Fairphone (Gen. 6) | Built and DT-schema checked; no device test claimed here. |
 
 SoC-wide definitions are in `arch/arm64/boot/dts/qcom/milos.dtsi`.
 The device tree expresses hardware data, not verification of working hardware.

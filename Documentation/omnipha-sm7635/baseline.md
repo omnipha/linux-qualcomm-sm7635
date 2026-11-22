@@ -49,6 +49,25 @@ The build completed without errors. SHA-256 of the outputs:
 This verifies compilation of the unmodified upstream baseline only. It is not
 a boot test and not a claim that any device works.
 
+### Device-tree schema check (2026-11-22)
+
+Both compiled baseline DTBs were checked on the host with `dtschema` 2026.9:
+
+```sh
+make -j4 O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CHECK_DTBS=1 \
+    qcom/milos-nothing-asteroids.dtb qcom/milos-fairphone-fp6.dtb
+dt-validate -m -u Documentation/devicetree/bindings \
+    -p out/Documentation/devicetree/bindings/processed-schema.json \
+    out/arch/arm64/boot/dts/qcom/milos-nothing-asteroids.dtb \
+    out/arch/arm64/boot/dts/qcom/milos-fairphone-fp6.dtb
+```
+
+Both tools produced no schema diagnostics for these DTBs; the DTB hashes above
+remained unchanged. As a negative control, removing the root `model` from a
+candidate DTB copy caused `dt-validate` to report that required property
+missing. The validator still returned exit status 0 in that case; inspect its
+output, not only its exit status. This is a schema check, not a hardware test.
+
 ### Known device-tree gaps for the Nothing target
 
 The upstream `milos-nothing-asteroids.dts` enables UART, USB, regulators,
@@ -64,7 +83,9 @@ untouched by board wiring.
 ## Next checks
 
 1. Compare the upstream Nothing tree, experimental Pro tree and the target's
-   stock hardware evidence before proposing device-specific changes.
+   stock hardware evidence before proposing device-specific changes. See the
+   [Nothing evidence](../nothing-asteroids/bringup-evidence.md), including the
+   L22 regulator discrepancy and missing SPI touchscreen driver.
 2. ~~Build the upstream baseline and both existing Milos device trees~~ done,
    see build verification above.
 3. Before any device test, establish identity, backups and a tested recovery
