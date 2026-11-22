@@ -6,6 +6,16 @@ kernel or in userspace and are labeled as such. Raw archives (stock DTB/DTS
 decompiles, captures) stay in the private device record; this file carries
 only shareable hardware facts, hashes and dates.
 
+## Source references
+
+- Nothing's published Android 6.1 tree, commit
+  [`d5f5f965fd0b478eaf4eb63fd984c5a4a92135a7`](https://github.com/NothingOSS/android_kernel_msm-6.1_nothing_sm7635/commit/d5f5f965fd0b478eaf4eb63fd984c5a4a92135a7):
+  [`volcano-qrd.dtsi`](https://github.com/NothingOSS/android_kernel_msm-6.1_nothing_sm7635/blob/d5f5f965fd0b478eaf4eb63fd984c5a4a92135a7/arch/arm64/boot/dts/vendor/qcom/volcano-qrd.dtsi)
+  specifies PM7550 L22 at 3.3 V and the Focaltech SPI node and supplies below.
+  Its [Pro overlay](https://github.com/NothingOSS/android_kernel_msm-6.1_nothing_sm7635/blob/d5f5f965fd0b478eaf4eb63fd984c5a4a92135a7/arch/arm64/boot/dts/vendor/qcom/volcano-qrd-pro-overlay.dts)
+  includes that common file and uses OEM ID 2. This is vendor source evidence,
+  not proof of Mainline compatibility or a live voltage measurement.
+
 ## Unit and stock identity
 
 - Reference unit: Omnipha `mb003`, Nothing Phone (3a) Pro (A059P).
