@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * Nothing Phone (3a) Pro (A059P): experimental, not boot-tested.
+ * The inherited Phone (3a) wiring has not been verified on the Pro.
+ */
+
+#include "milos-nothing-asteroids.dts"
+
+/ {
+	model = "Nothing Phone (3a) Pro";
+	compatible = "nothing,asteroids-pro", "nothing,asteroids", "qcom,milos";
+};
+
+/* PM7550 L22 is specified as 3.3 V in the archived Pro stock FDT. */
+&vreg_l22b {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+};

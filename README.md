@@ -15,12 +15,13 @@ It is not an installer, a boot image, or a claim that any phone is supported.
   records the previous Nothing vendor-kernel investigation.
 - Historical reference only: [sm7635-mainline/linux](https://github.com/sm7635-mainline/linux/tree/wip-next-20250502), an untested Linux 6.15-rc4 work-in-progress.
 
-## Device trees in the upstream baseline
+## Device trees
 
-| Source | Upstream model | Omnipha verification |
+| Source | Model | Origin and verification |
 |---|---|---|
-| `milos-nothing-asteroids.dts` | Nothing Phone (3a) | Built and DT-schema checked; no mainline boot tested here. Applicability to our Phone (3a) Pro is unknown. |
-| `milos-fairphone-fp6.dts` | The Fairphone (Gen. 6) | Built and DT-schema checked; no device test claimed here. |
+| `milos-nothing-asteroids.dts` | Nothing Phone (3a) | Upstream baseline; built and DT-schema checked, not boot-tested here. |
+| `milos-nothing-asteroids-pro.dts` | Nothing Phone (3a) Pro | Omnipha experimental variant; built and DT-schema checked, inherited wiring and boot are unverified. |
+| `milos-fairphone-fp6.dts` | The Fairphone (Gen. 6) | Upstream baseline; built and DT-schema checked, not device-tested here. |
 
 SoC-wide definitions are in `arch/arm64/boot/dts/qcom/milos.dtsi`.
 The device tree expresses hardware data, not verification of working hardware.
@@ -36,7 +37,8 @@ Example, from the root of this checkout:
 ```sh
 make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 make -j"$(nproc)" O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-    Image qcom/milos-nothing-asteroids.dtb qcom/milos-fairphone-fp6.dtb
+    Image qcom/milos-nothing-asteroids.dtb qcom/milos-nothing-asteroids-pro.dtb \
+    qcom/milos-fairphone-fp6.dtb
 ```
 
 These are build instructions, not a tested boot procedure. See

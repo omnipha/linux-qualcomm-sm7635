@@ -193,6 +193,11 @@ properties:
           - const: qcom,milos
 
       - items:
+          - const: nothing,asteroids-pro
+          - const: nothing,asteroids
+          - const: qcom,milos
+
+      - items:
           - enum:
               - microsoft,dempsey
               - microsoft,makepeace

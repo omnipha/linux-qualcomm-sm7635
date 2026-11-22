@@ -46,10 +46,12 @@ only shareable hardware facts, hashes and dates.
   resolves to PM7550 L22, specified as 3.3 V in the stock live FDT;
   `vddio-supply` resolves to PM7550 L11 at 1.8 V. These are DT properties,
   not measured voltages. The upstream Nothing tree sets PM7550 L22
-  (`vreg_l22b`) to 3.2 V, a discrepancy to resolve before enabling touch or
-  changing the rail. Measured working on vendor
-  kernel 6.1 with the vendor module `focaltech_fts.ko` (device record boot
-  `8dc2622e`, 2026-11-07). Required module order on the vendor kernel:
+  (`vreg_l22b`) to 3.2 V. The experimental Pro tree specifies 3.3 V from
+  stock DT, but neither value has been measured on the physical rail and the
+  discrepancy must be resolved before device testing or enabling touch.
+  Touch was measured working on vendor kernel 6.1 with the vendor module
+  `focaltech_fts.ko` (device record boot `8dc2622e`, 2026-11-07). Required
+  module order on the vendor kernel:
   `msm_gpi` -> `touchpanel_event_notify` -> `spi-msm-geni` -> `focaltech_fts`;
   loading `spi-msm-geni` without `msm_gpi` crashed the SoC into Qualcomm crash
   mode. Vendor behavior only; it says nothing about a mainline driver.
@@ -99,6 +101,9 @@ only shareable hardware facts, hashes and dates.
   device tree on branch `omnipha`, never into `milos.dtsi`.
 - Each addition needs its own measured evidence per `AGENTS.md`; the vendor
   kernel measurements above are evidence for vendor behavior only.
+- The experimental Pro tree includes the upstream Nothing tree and overrides
+  only the model, compatible and stock-DT L22 voltage. It does not enable
+  touch; its inherited wiring, boot and L22 behavior remain unverified.
 - Open measurement points: actual bootloader DTBO selection, the upstream
   board tree's applicability to Pro, the fitted panel variant, the L22
   voltage discrepancy and the SPI touch protocol against a mainline driver.

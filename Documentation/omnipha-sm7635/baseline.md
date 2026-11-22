@@ -68,6 +68,35 @@ candidate DTB copy caused `dt-validate` to report that required property
 missing. The validator still returned exit status 0 in that case; inspect its
 output, not only its exit status. This is a schema check, not a hardware test.
 
+### Experimental Nothing Phone (3a) Pro variant (2026-11-22)
+
+On top of `7f13972430247f1278efced8679b46a761984231`, the Omnipha variant
+`milos-nothing-asteroids-pro.dts` includes the upstream Phone (3a) tree and
+changes only the model, adds an experimental Pro compatible with the existing
+board fallback, and sets PM7550 L22 to 3.3 V. The L22 value is from the
+archived Pro stock FDT, not a measured rail voltage. It is not proof that the
+inherited Phone (3a) wiring is correct on the Pro.
+
+```sh
+make -j4 O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CHECK_DTBS=1 \
+    qcom/milos-nothing-asteroids-pro.dtb qcom/milos-nothing-asteroids.dtb \
+    qcom/milos-fairphone-fp6.dtb
+make -j4 O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    DT_SCHEMA_FILES=arm/qcom.yaml dt_binding_check
+```
+
+The new Pro DTB built and all three DTBs passed direct `dt-validate` without
+schema diagnostics; the binding and YAML style checks reported no errors.
+Comparing the decompiled DTBs showed exactly four changed properties: root
+`model`, root `compatible`, and L22 minimum/maximum voltage. The original
+Nothing and Fairphone DTB hashes above remained unchanged. The Pro DTB SHA-256
+is `25ee4f8dd5789bc679d009712bba0e14d06ac1b8df65131e8d35219b24663228`.
+
+This is an experimental host build only: no device boot, flash, touch driver,
+panel support, firmware validation or physical voltage measurement. Bootloader
+DT selection and compatibility of inherited wiring remain unverified. Do not
+install without independently verifying the device and a recovery path.
+
 ### Known device-tree gaps for the Nothing target
 
 The upstream `milos-nothing-asteroids.dts` enables UART, USB, regulators,
