@@ -25,15 +25,47 @@ fork. Device-specific additions must not change unrelated phone wiring.
 
 ## Verification
 
-The baseline source has been checked out. A build, device-tree validation and
-mainline boot of the Nothing Phone (3a) Pro remain unverified. No files have
-been written to a phone as part of this repository setup.
+### Build verification (2026-11-22)
+
+Host build on x86_64 with `aarch64-linux-gnu-gcc` 15.2.0, GNU Make 4.4.1 and
+dtc 1.7.2, from branch `omnipha` at commit
+`55ad2d8cec4e02f6dcce4b500fd4c547f355d3c1`:
+
+```sh
+make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+make -j4 O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    Image qcom/milos-nothing-asteroids.dtb qcom/milos-fairphone-fp6.dtb
+```
+
+The build completed without errors. SHA-256 of the outputs:
+
+| artifact | sha256 |
+| --- | --- |
+| `out/arch/arm64/boot/Image` | `94060c8a9382737c43260b1f68ccf41fe8477927e991b927702d7c002741fd8d` |
+| `out/arch/arm64/boot/dts/qcom/milos-nothing-asteroids.dtb` | `020f9b7be25af001958febc0ba15efc87e4c86c25553e3c47f8aa1120304ad4a` |
+| `out/arch/arm64/boot/dts/qcom/milos-fairphone-fp6.dtb` | `c3908fe06eeb9e236923b9081639d7f7d18bb10d42848077750b2397c8f5ad6a` |
+| `out/.config` | `5ce33c8f5e1db4278b0d74981d54b8eaa354d409b4f36529704024ba0d5c2576` |
+
+This verifies compilation of the unmodified upstream baseline only. It is not
+a boot test and not a claim that any device works.
+
+### Known device-tree gaps for the Nothing target
+
+The upstream `milos-nothing-asteroids.dts` enables UART, USB, regulators,
+remoteprocs and keys, but no display panel, no touchscreen and no camera.
+The historical `sm7635-mainline` WIP tree lists those peripherals only as
+comments (for example a FocalTech touchscreen on SPI0). Mainline Linux 7.3
+has no driver matching the stock touch controller compatible observed on the
+device, and the stock panel and camera wiring is not represented upstream.
+Any Omnipha device work must therefore add device-specific nodes and, where
+needed, driver support on top of measured evidence; the shared SoC tree stays
+untouched by board wiring.
 
 ## Next checks
 
 1. Compare the upstream Nothing tree, experimental Pro tree and the target's
    stock hardware evidence before proposing device-specific changes.
-2. Build the upstream baseline and both existing Milos device trees; record
-   tools, revision and output hashes.
+2. ~~Build the upstream baseline and both existing Milos device trees~~ done,
+   see build verification above.
 3. Before any device test, establish identity, backups and a tested recovery
    path. Test on-device support separately for each device and subsystem.
