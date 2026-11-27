@@ -63,7 +63,9 @@ fi
 for option in CONFIG_USB_GADGET CONFIG_CONFIGFS_FS CONFIG_USB_CONFIGFS \
 	CONFIG_USB_CONFIGFS_NCM CONFIG_USB_F_NCM CONFIG_USB_CONFIGFS_ECM \
 	CONFIG_USB_F_ECM CONFIG_USB_DWC3 CONFIG_USB_DWC3_QCOM \
-	CONFIG_PHY_SNPS_EUSB2 CONFIG_PHY_QCOM_EUSB2_REPEATER; do
+	CONFIG_PHY_SNPS_EUSB2 CONFIG_PHY_QCOM_EUSB2_REPEATER \
+	CONFIG_DRM_SIMPLEDRM CONFIG_FRAMEBUFFER_CONSOLE CONFIG_VT \
+	CONFIG_VT_CONSOLE CONFIG_FONT_TER16x32; do
 	grep -qx "$option=y" "$KERNEL_OUT/.config" || die "kernel config missing built-in $option=y"
 done
 
@@ -165,7 +167,7 @@ file "$busybox" | grep -q 'statically linked' || die "busybox is not static"
 install -m 0755 "$busybox" "$stage/root/bin/busybox"
 
 # Install busybox symlinks
-for applet in sh ip sleep mount mkdir mknod ln hostname setsid cttyhack cat grep uname reboot tr seq ps; do
+for applet in sh ip sleep mount mkdir mknod ln hostname setsid cttyhack cat grep uname reboot tr seq ps getty login; do
 	ln -sf busybox "$stage/root/bin/$applet"
 done
 ln -sf ../bin/busybox "$stage/root/sbin/init"
@@ -205,6 +207,9 @@ mknod "$root/dev/null" c 1 3
 mknod "$root/dev/zero" c 1 5
 mknod "$root/dev/kmsg" c 1 11
 mknod "$root/dev/ptmx" c 5 2
+mknod "$root/dev/tty" c 5 0
+mknod "$root/dev/tty0" c 4 0
+mknod "$root/dev/tty1" c 4 1
 cd "$root"
 find . -exec touch -h -d '@0' {} +
 find . -print0 | LC_ALL=C sort -z | cpio --null -o -H newc --reproducible --owner=0:0 --quiet
@@ -223,7 +228,7 @@ printf '%s\n' \
 	'androidboot.usbcontroller=a600000.usb' \
 	'androidboot.console=0' >"$stage/bootconfig"
 
-BOOT_CMDLINE='console=ttynull bootconfig ioremap_guard loglevel=6'
+BOOT_CMDLINE='console=tty0 fbcon=font:TER16x32 clk_ignore_unused pd_ignore_unused bootconfig ioremap_guard loglevel=6'
 VENDOR_CMDLINE='earlycon keep_bootcon loglevel=8 log_buf_len=1M ignore_loglevel printk.devkmsg=on panic=-1 bootconfig'
 
 echo "Packaging Android Header v4 boot images..."

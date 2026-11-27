@@ -9,6 +9,28 @@
 / {
 	model = "Nothing Phone (3a) Pro";
 	compatible = "nothing,asteroids-pro", "nothing,asteroids", "qcom,milos";
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		framebuffer0: framebuffer@e3940000 {
+			compatible = "simple-framebuffer";
+			reg = <0x0 0xe3940000 0x0 (1080 * 2392 * 4)>;
+			width = <1080>;
+			height = <2392>;
+			stride = <(1080 * 4)>;
+			format = "a8r8g8b8";
+		};
+	};
+
+	reserved-memory {
+		cont_splash_mem: cont-splash@e3940000 {
+			reg = <0x0 0xe3940000 0x0 0x2b00000>;
+			no-map;
+		};
+	};
 };
 
 /* PM7550 L22 is specified as 3.3 V in the archived Pro stock FDT. */

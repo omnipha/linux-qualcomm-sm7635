@@ -138,6 +138,7 @@ check("boot-standalone.img unpacked ramdisk byte-identical to initramfs.cpio.gz"
 # Verify DTB magic and Nothing Phone (3a) Pro model in DTB
 check("DTB starts with FDT magic (0xd00dfeed)", dtb_data[:4] == b"\xd0\x0d\xfe\xed")
 check("DTB contains 'Nothing Phone (3a) Pro' model string", b"Nothing Phone (3a) Pro" in dtb_data)
+check("DTB contains 'simple-framebuffer' compatible", b"simple-framebuffer" in dtb_data)
 PY
 
 # 4. Deep inspection of the packed initramfs cpio content and security hygiene
@@ -214,6 +215,9 @@ expected_devs = {
     "dev/null": (1, 3),
     "dev/zero": (1, 5),
     "dev/ptmx": (5, 2),
+    "dev/tty": (5, 0),
+    "dev/tty0": (4, 0),
+    "dev/tty1": (4, 1),
 }
 for dev_name, (exp_maj, exp_min) in expected_devs.items():
     check(f"entry '{dev_name}' present in cpio", dev_name in entries)
