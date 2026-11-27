@@ -138,7 +138,7 @@ CONFIG_USB_F_ECM_SUBSET=y
 - **Compiler:** `aarch64-linux-gnu-gcc` (Ubuntu 15.2.0-16ubuntu1) 15.2.0
 - **Make:** GNU Make 4.4.1
 - **DTC:** 1.7.2
-- **dtschema:** 2026.9 (`/home/gregor/.cache/omnipha-dtschema-venv`)
+- **dtschema:** 2026.9 (isolated virtual environment)
 - **Kernel release:** `7.3.0-gb81b95d869a9`
 
 ### 4.2 Configuration Resolution

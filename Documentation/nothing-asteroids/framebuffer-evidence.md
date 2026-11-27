@@ -35,9 +35,9 @@ from private stock evidence are:
 All evidence is derived from read-only host archives of unit `mb003`:
 
 ### 2.1 Stock Live Devicetree (Live FDT)
-- **Binary archive:** `/home/gregor/phone-second-life-data/mb003/dtb/live-fdt.dtb`
+- **Binary archive:** `live-fdt.dtb`
   - **SHA-256:** `7310d10a9dc9c78a7c5bedd20375fd5506d0e7cbdc9ed7eac47a83651c259c6c`
-- **Decompiled DTS:** `/home/gregor/phone-second-life-data/mb003/dtb/live-fdt.dts`
+- **Decompiled DTS:** `live-fdt.dts`
   - **SHA-256:** `a56788799b1badb047d245c1b1e36bfbe0277d17de0cec6b622e410b4de4fd78`
 - **Key Evidence Nodes:**
   1. `/reserved-memory/splash_region`:
@@ -68,8 +68,8 @@ All evidence is derived from read-only host archives of unit `mb003`:
      ```
 
 ### 2.2 Vendor Kernel Ramoops Console Log
-- **File:** `/home/gregor/phone-second-life-data/mb003/pstore/console-ramoops-0`
-- **SHA-256:** `c9c49d9244c6531ffb06560ca9c26b24b30786fdd03bc2bce7e193e80b453fd2`
+- **File:** `console-ramoops-0`
+  - **SHA-256:** `c9c49d9244c6531ffb06560ca9c26b24b30786fdd03bc2bce7e193e80b453fd2`
 - **Recorded Boot Evidence:**
   - `OF: reserved mem: 0x00000000e3940000..0x00000000e643ffff ( 44032 KB ) map non-reusable splash_region`
   - `[drm] cont_splash enabled in 1 of 1 display(s)`
@@ -77,8 +77,8 @@ All evidence is derived from read-only host archives of unit `mb003`:
   - `[drm:dsi_display_set_mode [msm_drm]] [msm-dsi-info]: mdp_transfer_time=0, hactive=1080, vactive=2392, fps=120, clk_rate=0`
 
 ### 2.3 Stock DTBO Entry 65 (Pro Overlay)
-- **File:** `/home/gregor/phone-second-life-data/mb003/dtb/dtbo_a.65.dtb`
-- **SHA-256:** `93be04b6e20914fd1546ad314e351199bb3e6b6a71c2555ef956175164909ae2`
+- **File:** `dtbo_a.65.dtb`
+  - **SHA-256:** `93be04b6e20914fd1546ad314e351199bb3e6b6a71c2555ef956175164909ae2`
 - **Model:** `Qualcomm Technologies, Inc. Volcano QRD Pro`
 - **Identifiers:** `qcom,board-id = <11 0>`, `qcom,oem-id = <2>`
 

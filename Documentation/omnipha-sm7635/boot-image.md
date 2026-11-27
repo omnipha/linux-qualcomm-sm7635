@@ -201,7 +201,7 @@ On successful boot:
       Omnipha Mainline Linux for Qualcomm SM7635 (Milos)
       Device:  Nothing Phone (3a) Pro
       Kernel:  7.3.0-...
-      Address: 192.168.10.2 (USB CDC ECM/NCM)
+      Address: 172.16.42.2 / 192.168.10.2 (USB CDC ECM/NCM)
       Access:  Key-only Dropbear SSH (root)
       Console: /dev/tty0 (bootloader framebuffer)
      ======================================================================
@@ -212,15 +212,15 @@ On successful boot:
    `lsusb -d 1d6b:0104` returns `ID 1d6b:0104 Linux Foundation Multifunction Composite Gadget`.
 3. **Network Interface:**
    Host network manager or kernel detects network interface (`usb0` or `enp...`).
-   Host configures `192.168.10.1/24`:
+   Host configures `172.16.42.1/24` (or `192.168.10.1/24`):
    ```sh
-   sudo ip addr add 192.168.10.1/24 dev <host-interface>
+   sudo ip addr add 172.16.42.1/24 dev <host-interface>
    sudo ip link set dev <host-interface> up
-   ping -c 3 192.168.10.2
+   ping -c 3 172.16.42.2
    ```
 4. **SSH Access:**
    ```sh
-   ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@192.168.10.2
+   ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@172.16.42.2
    ```
    - No password prompt is requested.
    - Motd banner confirms device identity (`Nothing Phone (3a) Pro`) and kernel release.
@@ -252,11 +252,14 @@ On successful boot:
   framerate switching (60 Hz / 120 Hz) remain out of scope.
 
 ### 4.5 Rollback Expectation
-Because `fastboot boot` loads the image into RAM only:
-- All on-flash partitions remain completely unaltered.
-- Powering off or issuing a hard reset (holding Power button for 10 seconds) immediately returns
-  the phone to the stock Android system on slot A.
-- No user data, recovery, or bootloader partition is touched.
+- **For Candidate 2 (`fastboot boot boot-standalone.img`):**
+  Loads the image into RAM only. All on-flash partitions remain completely unaltered.
+  Powering off or issuing a hard reset (holding Power button for 10 seconds) immediately returns
+  the phone to the stock Android system on slot A. No user data, recovery, or bootloader partition is touched.
+- **For Candidate 1 (flashed to Slot B carrier):**
+  Flashing targets `boot_b`, `init_boot_b`, and `vendor_boot_b`. Active slot A remains 100% untouched stock Android.
+  Returning to stock Android requires only `fastboot set_active a`. See detailed, verified rollback steps
+  and checksums in [best-shot-review.md](best-shot-review.md).
 
 ### 4.6 Abort Conditions and Failure Paths
 The operator must abort the test immediately if any of the following occur:

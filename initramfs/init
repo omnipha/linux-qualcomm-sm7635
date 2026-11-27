@@ -66,7 +66,7 @@ cat >/etc/motd <<EOF
  Omnipha Mainline Linux for Qualcomm SM7635 (Milos)
  Device:  ${DT_MODEL}
  Kernel:  ${KERNEL_REL} (${KERNEL_VER})
- Address: 192.168.10.2 (USB CDC ECM/NCM)
+ Address: 172.16.42.2 / 192.168.10.2 (USB CDC ECM/NCM)
  Access:  Key-only Dropbear SSH (root)
  Console: /dev/tty0 (bootloader framebuffer)
 ======================================================================
@@ -125,13 +125,21 @@ else
 	if err=$({ printf '%s' "$UDC" >"$G/UDC"; } 2>&1); then
 		log "USB gadget successfully bound to ${UDC}"
 
-		# Configure primary network interface (usb0) on documented lab subnet
+		# Configure primary network interface (usb0) on lab subnet 172.16.42.0/24 and fallback 192.168.10.0/24
 		if err=$(ip link set usb0 up 2>&1); then
 			log 'usb0 link up: ok'
 		else
 			log "usb0 link up failed: ${err}"
 		fi
 
+		# Primary address: lab standard 172.16.42.2/24 (per phone-second-life standard and record #53)
+		if err=$(ip addr add 172.16.42.2/24 dev usb0 2>&1); then
+			log 'usb0 address 172.16.42.2/24: added'
+		else
+			log "usb0 address 172.16.42.2/24 failed: ${err}"
+		fi
+
+		# Secondary address: 192.168.10.2/24 compatibility
 		if err=$(ip addr add 192.168.10.2/24 dev usb0 2>&1); then
 			log 'usb0 address 192.168.10.2/24: added'
 		else
@@ -141,8 +149,9 @@ else
 		# If second function (usb1) was created, assign secondary subnet
 		if [ -e /sys/class/net/usb1 ]; then
 			ip link set usb1 up 2>/dev/null || true
+			ip addr add 172.16.43.2/24 dev usb1 2>/dev/null || true
 			ip addr add 192.168.11.2/24 dev usb1 2>/dev/null || true
-			log 'usb1 interface configured (192.168.11.2/24)'
+			log 'usb1 interface configured (172.16.43.2/24 / 192.168.11.2/24)'
 		fi
 
 		# Log active network configuration
@@ -154,18 +163,18 @@ else
 	fi
 fi
 
-# Start Dropbear SSH server
+# Start Dropbear SSH server on all interfaces (port 22)
 mkdir -p /etc/dropbear /var/run
 if [ -x /bin/dropbear ]; then
-	if /bin/dropbear -E -R -p 192.168.10.2:22 2>&1 | while IFS= read -r line; do log "dropbear: ${line}"; done & then
-		log 'Dropbear SSH server started on 192.168.10.2:22'
+	if /bin/dropbear -E -R -p 22 2>&1 | while IFS= read -r line; do log "dropbear: ${line}"; done & then
+		log 'Dropbear SSH server started on port 22'
 	else
 		log 'ERROR: Failed to start Dropbear SSH server'
 	fi
 
 	# Verify listener in /proc/net/tcp
 	sleep 1
-	if grep -q "020AA8C0:0016" /proc/net/tcp 2>/dev/null || grep -q "00000000:0016" /proc/net/tcp 2>/dev/null; then
+	if grep -q ":0016" /proc/net/tcp 2>/dev/null; then
 		log 'Dropbear listener verified active on port 22'
 	else
 		log 'Dropbear listener not yet observed in /proc/net/tcp'

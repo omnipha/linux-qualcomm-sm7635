@@ -9,6 +9,8 @@
 / {
 	model = "Nothing Phone (3a) Pro";
 	compatible = "nothing,asteroids-pro", "nothing,asteroids", "qcom,milos";
+	qcom,msm-id = <0x280 0x10000 0x281 0x10000 0x27c 0x10000>;
+	qcom,board-id = <0x0b 0x00>;
 
 	chosen {
 		#address-cells = <2>;
