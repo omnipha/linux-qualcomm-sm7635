@@ -72,6 +72,8 @@ only shareable hardware facts, hashes and dates.
   on a custom kernel bound a BOE panel node while the glass stayed dark
   (device record runs 87/88, 2026-11-01). The panel variant fitted to the
   reference unit is not conclusively established in public evidence.
+  For early console via bootloader continuous splash (`simple-framebuffer`),
+  see [framebuffer-evidence.md](framebuffer-evidence.md).
 - Camera: Sony IMX355 ultra-wide captured in userspace through the vendor
   kernel TFE/RDI path (1680x1260 RAW10); see the private device record and
   `phone-second-life` `patches/mb003-camera`. Mainline has

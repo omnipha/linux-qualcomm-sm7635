@@ -142,13 +142,14 @@ Outputs are placed in `$WORK/out-mainline` (default: `~/sm7635-build/out-mainlin
 
 | Artifact | Size (bytes) | SHA-256 Checksum | Description |
 |---|---|---|---|
-| `boot.img` | 14,938,112 | `07fc402a9d1e41d12299f30beec34269a7ff9d1bc6349d0f9c1ff239a56ef9a7` | Header v4, mainline `Image.gz`, empty ramdisk |
-| `init_boot.img` | 1,679,360 | `97ec0cb40ab25ac1988fed38fb47ba46b48a7d86fd6e8c45e00680a6b89b86fe` | Header v4, empty kernel, generic initramfs |
-| `vendor_boot.img` | 1,757,184 | `d2fd4c915c8a4b85b390cd9e576e01a763beec74d164d491f79eb82a336e003e` | Header v4, DTB, vendor ramdisk, bootconfig |
-| `boot-standalone.img` | 16,613,376 | `a6362341663ddbbc08d44ae9d1710beea70b66f336cfa9a5d54e4b960d6883b1` | Header v4, `Image.gz` + embedded initramfs |
-| `dtb.img` | 69,470 | `25ee4f8dd5789bc679d009712bba0e14d06ac1b8df65131e8d35219b24663228` | Mainline `milos-nothing-asteroids-pro.dtb` |
-| `Image.gz` | 14,931,336 | `56a1b6f45868d3c81a80fa17bf169a5ad805dfcd2dc67d4c2a90826bb7a2462c` | Mainline kernel gzip payload |
-| `initramfs.cpio.gz` | 1,674,441 | `bbedbb58b2275b102233c560057107bcb56a00f00ed9bdbe8e5adfa61084b5a4` | Reproducible CPIO initramfs archive |
+| `boot.img` | 15,216,640 | `fcc6b961f2c684544c12300aa2bfbd5d827db1190e813d8ea136d4fe836749d5` | Header v4, mainline `Image.gz`, empty ramdisk |
+| `init_boot.img` | 1,679,360 | `85be2f41b14b05edb40b0d3e49b6ac9d3fb8f5d28ce8abaade8920135ad914ed` | Header v4, empty kernel, generic initramfs |
+| `vendor_boot.img` | 1,761,280 | `4cf5fd279b94e67364e73ebea4b2971d664e5f42e90cc20fbf21ce1baaa98d29` | Header v4, Pro DTB with framebuffer, vendor ramdisk, bootconfig |
+| `boot-standalone.img` | 16,891,904 | `fab1314a36160ea39c0ac950e171042464440813cfb5316da3c81fd181e75d6f` | Header v4, `Image.gz` + embedded initramfs (`console=tty0`) |
+| `dtb.img` | 69,777 | `4b45b5f6c8a4fd5ea151d73c595b7416a3d33dca9f6cab3656d50066edbb9a79` | Mainline `milos-nothing-asteroids-pro.dtb` (with simple-framebuffer) |
+| `Image` (raw) | 43,158,016 | `44e1cc158387317da25075c68c0e684cc0144d83041a0e6124221577943cb7c0` | Raw uncompressed mainline kernel Image |
+| `Image.gz` | 15,210,129 | `f53d6409f49f84d8658e419772bf0e3ff3902a778c381a32fc2655bbc578d0a7` | Mainline kernel gzip payload |
+| `initramfs.cpio.gz` | 1,674,591 | `2322283eac2d2fdb643fd2bfd8d8cf17963eb1f616be1db87b9d9467705b7ab4` | Reproducible CPIO initramfs archive |
 
 Checksums are recorded in `$WORK/out-mainline/bootimg-sha256.txt` and verified with `sha256sum -c`.
 
@@ -190,10 +191,26 @@ fastboot boot ~/sm7635-build/out-mainline/boot-standalone.img
 
 ### 4.3 Success Criteria
 On successful boot:
-1. **USB Enumeration:**
+1. **On-Screen Display Console (`tty0` via SimpleDRM):**
+   - The bootloader splash remains lit during kernel handover without screen flicker or blackout.
+   - High-DPI Terminus 16x32 font initializes on the 1080x2392 panel (`fbcon=font:TER16x32`).
+   - Kernel boot log messages scroll legibly on `/dev/tty0`.
+   - Initramfs prints the identity banner to the display:
+     ```
+     ======================================================================
+      Omnipha Mainline Linux for Qualcomm SM7635 (Milos)
+      Device:  Nothing Phone (3a) Pro
+      Kernel:  7.3.0-...
+      Address: 192.168.10.2 (USB CDC ECM/NCM)
+      Access:  Key-only Dropbear SSH (root)
+      Console: /dev/tty0 (bootloader framebuffer)
+     ======================================================================
+     ```
+   - An interactive fallback root shell prompt (`# `) appears on the phone screen.
+2. **USB Enumeration:**
    Host detects USB gadget within 15–30 seconds:
    `lsusb -d 1d6b:0104` returns `ID 1d6b:0104 Linux Foundation Multifunction Composite Gadget`.
-2. **Network Interface:**
+3. **Network Interface:**
    Host network manager or kernel detects network interface (`usb0` or `enp...`).
    Host configures `192.168.10.1/24`:
    ```sh
@@ -201,42 +218,64 @@ On successful boot:
    sudo ip link set dev <host-interface> up
    ping -c 3 192.168.10.2
    ```
-3. **SSH Access:**
+4. **SSH Access:**
    ```sh
    ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@192.168.10.2
    ```
    - No password prompt is requested.
-   - Banner displays:
-     ```
-     Omnipha Mainline Linux for Qualcomm SM7635 (Milos)
-     Device:  Nothing Phone (3a) Pro
-     Kernel:  7.3.0-...
-     ```
+   - Motd banner confirms device identity (`Nothing Phone (3a) Pro`) and kernel release.
    - `uname -r` confirms the mainline kernel release.
    - Command `touch /run/keep` cancels the 150-second watchdog.
 
-### 4.4 Rollback Expectation
+### 4.4 On-Screen Display Scope and Boundaries
+
+#### 4.4.1 What the On-Screen Result Proves
+- **Intact scanout memory:** Validates that the bootloader continuous splash region at physical
+  address `0xe3940000` (43 MiB) remains preserved and undisturbed by kernel memory initialization.
+- **Reserved-memory enforcement:** Confirms that the `cont_splash_mem` node in `reserved-memory`
+  successfully prevents page allocations from overwriting scanout memory.
+- **Driver binding and console pipeline:** Confirms `CONFIG_DRM_SIMPLEDRM`, `CONFIG_DRM_FBDEV_EMULATION`,
+  `CONFIG_FRAMEBUFFER_CONSOLE`, and `CONFIG_FONT_TER16x32` operate cleanly on 64-bit ARM.
+- **Fail-safe diagnostic visibility:** If USB enumeration fails on the host, the phone display
+  provides immediate visual feedback showing deferred probe status, kernel errors, and init execution.
+
+#### 4.4.2 What the On-Screen Result Does NOT Prove (Explicit Out-of-Scope List)
+- **A lit screen is NOT a functional display stack:** The scanout buffer is merely scanning out memory
+  configured previously by the Qualcomm ABL bootloader.
+- **No native DSI controller:** The Qualcomm DPU / MDSS display controller driver (`qcom,milos-mdss` /
+  `qcom,milos-dpu`) is disabled (`status = "disabled"` in DT); no native KMS modesetting occurs.
+- **No native panel driver:** Neither the BOE `rm69220` nor Focaltech `ft8726` panel driver is probed.
+- **No brightness or backlight control:** Backlight PWM / DCS DBV brightness control remains inactive;
+  the panel operates solely at the brightness set by the bootloader.
+- **No touchscreen input:** The Focaltech `focaltech,fts_ts` SPI touchscreen driver is out of scope.
+- **No power management or refresh switching:** Display runtime PM, panel sleep/wakeup, and dynamic
+  framerate switching (60 Hz / 120 Hz) remain out of scope.
+
+### 4.5 Rollback Expectation
 Because `fastboot boot` loads the image into RAM only:
 - All on-flash partitions remain completely unaltered.
 - Powering off or issuing a hard reset (holding Power button for 10 seconds) immediately returns
   the phone to the stock Android system on slot A.
 - No user data, recovery, or bootloader partition is touched.
 
-### 4.5 Abort Conditions and Failure Paths
+### 4.6 Abort Conditions and Failure Paths
 The operator must abort the test immediately if any of the following occur:
 1. **Fastboot command failure:**
    `fastboot boot` returns error or rejects the header.
    *Action:* Disconnect USB, do not flash partitions.
-2. **No USB enumeration within 45 seconds:**
+2. **Display corruption or hang without USB:**
+   Screen goes blank or artifacts appear and neither `1d6b:0104` nor watchdog reset occurs within 180s.
+   *Action:* Hard reset by holding Power button for 10 seconds.
+3. **No USB enumeration within 45 seconds:**
    Device screen remains blank, no `1d6b:0104` appears in host `dmesg` or `lsusb`.
    *Action:* Check host `dmesg` for USB resets; power off device to return to stock Android.
-3. **USB enumeration without network:**
+4. **USB enumeration without network:**
    Device appears in `lsusb` but network interface fails to bind or DHCP/static IP fails.
    *Action:* Capture `lsusb -v`, check for endpoint errors.
-4. **SSH refused:**
+5. **SSH refused:**
    Network is up, port 22 is closed or drops packets.
    *Action:* Check host `nmap -p 22 192.168.10.2` and host route table.
-5. **Watchdog expiry:**
+6. **Watchdog expiry:**
    If the device reboots to fastboot/bootloader after 150 seconds, the watchdog acted as designed.
 
 ---
