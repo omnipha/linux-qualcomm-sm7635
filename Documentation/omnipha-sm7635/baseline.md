@@ -117,5 +117,8 @@ untouched by board wiring.
    L22 regulator discrepancy and missing SPI touchscreen driver.
 2. ~~Build the upstream baseline and both existing Milos device trees~~ done,
    see build verification above.
-3. Before any device test, establish identity, backups and a tested recovery
+3. Mainline USB device-mode preparation: done, see
+   [USB device mode documentation](usb-device-mode.md) and the versioned
+   fragment `arch/arm64/configs/omnipha_usb_gadget.config`.
+4. Before any device test, establish identity, backups and a tested recovery
    path. Test on-device support separately for each device and subsystem.

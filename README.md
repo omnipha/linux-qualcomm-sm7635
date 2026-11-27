@@ -35,15 +35,23 @@ flex, bison, bc, OpenSSL development headers, and device-tree build tools.
 Example, from the root of this checkout:
 
 ```sh
+# Baseline build
 make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+make -j"$(nproc)" O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+    Image qcom/milos-nothing-asteroids.dtb qcom/milos-nothing-asteroids-pro.dtb \
+    qcom/milos-fairphone-fp6.dtb
+
+# Or with USB gadget device-mode networking fragment for headless bring-up:
+make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig omnipha_usb_gadget.config
 make -j"$(nproc)" O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
     Image qcom/milos-nothing-asteroids.dtb qcom/milos-nothing-asteroids-pro.dtb \
     qcom/milos-fairphone-fp6.dtb
 ```
 
 These are build instructions, not a tested boot procedure. See
-[baseline and evidence](Documentation/omnipha-sm7635/baseline.md) for the
-current verification status. Firmware is not included. Do not reboot or flash a
+[baseline and evidence](Documentation/omnipha-sm7635/baseline.md) and
+[USB device mode preparation](Documentation/omnipha-sm7635/usb-device-mode.md)
+for current verification status. Firmware is not included. Do not reboot or flash a
 device without first verifying its identity, backup and recovery path.
 
 ## Licensing
